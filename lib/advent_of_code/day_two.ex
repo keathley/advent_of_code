@@ -8,16 +8,14 @@ defmodule AdventOfCode.DayTwo do
   end
 
   def evenly_divisible(list) do
+    import Enum
+    import List, only: [delete_at: 2, first: 1]
+
     list
-    |> Enum.with_index
-    |> Enum.flat_map(fn ({x, i}) ->
-      list
-      |> List.delete_at(i)
-      |> Enum.map(fn y -> {x, y, rem(y, x)} end)
-    end)
-    |> Enum.filter(fn {_, _, r} -> r == 0 end)
-    |> Enum.map(fn {x, y, _} -> {x, y} end)
-    |> List.first
+    |> with_index
+    |> flat_map(fn {x, i} -> map(delete_at(list, i), fn y -> {x, y} end) end)
+    |> filter(fn {x, y} -> rem(y, x) == 0 end)
+    |> first
   end
 
   def checksum(spreadsheet, selector, aggregate) do
