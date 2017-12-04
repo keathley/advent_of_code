@@ -1,5 +1,5 @@
 defmodule AdventOfCode.DayThree do
-  def distance(label) do
+  def part_one(label) do
     label
     |> to_point
     |> manhattan_distance(point(0, 0))

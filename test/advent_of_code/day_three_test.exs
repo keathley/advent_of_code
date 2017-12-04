@@ -5,10 +5,10 @@ defmodule AdventOfCode.DayThreeTest do
   alias AdventOfCode.DayThree
 
   test "examples" do
-    assert DayThree.distance(1) == 0
-    assert DayThree.distance(12) == 3
-    assert DayThree.distance(23) == 2
-    assert DayThree.distance(1024) == 31
+    assert DayThree.part_one(1) == 0
+    assert DayThree.part_one(12) == 3
+    assert DayThree.part_one(23) == 2
+    assert DayThree.part_one(1024) == 31
 
     assert DayThree.part_two(265149) == 266330
   end
