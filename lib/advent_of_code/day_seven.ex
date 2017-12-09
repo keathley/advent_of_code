@@ -1,8 +1,76 @@
 defmodule AdventOfCode.DaySeven do
+  defmodule Tree do
+    def insert(node) do
+    end
+
+    def root(ls) do
+      ds =
+        ls
+        |> Enum.map(fn {_, _, ds} -> ds end)
+        |> Enum.concat
+
+      ls
+      |> Enum.map(fn {name, _, _} -> name end)
+      |> Enum.find(fn i -> !Enum.any?(ds, & &1 == i) end)
+    end
+
+    def build(ls, name, acc) do
+      {name, weight, ds} = Enum.find(ls, fn {e_name, _, _} -> name == e_name end)
+      subt = Enum.reduce(ds, [], & build(ls, &1, &2))
+      subt_weight = Enum.map(subt, fn {_, w, _} -> w end) |> Enum.sum
+      [{name, weight + subt_weight, subt} | acc]
+      # Map.put(acc, {name, weight}, Enum.reduce(ds, %{}, & build(ls, &1, &2)))
+    end
+
+    def find_imbalance([{name, weight, subt}]) do
+      if uniq_weights(subt) |> Enum.count != 1 do
+        [t1, t2] =
+          subt
+          |> uniq_weights
+        IO.puts "Subtree is imbalanced"
+        {n1, w1, _} = t1
+        {n2, w2, _} = t2
+        IO.inspect([n1, w1], label: "Tree 1")
+        IO.inspect([n2, w2], label: "Tree 2")
+        # IO.puts "Subtree is imbalanced by #{w2-w1}"
+      else
+        find_imbalance(subt)
+      end
+    end
+
+    def uniq_weights(tree) do
+      tree
+      |> Enum.uniq_by(fn {_, weight, _} -> weight end)
+    end
+
+    def tree_weight([]), do: 0
+    def tree_weight([{_, weight, tree}]), do: weight + tree_weight(tree)
+    def tree_weight([{_, weight, tree} | tail]) do
+      weight + tree_weight(tree) + tree_weight(tail)
+    end
+
+    def find_imbalance(tree) do
+
+    end
+
+    def program_weight({{_, weight}, subp}) do
+      IO.inspect(weight)
+      IO.inspect(subp)
+      weight + Enum.reduce(subp, 0, fn({{_, w}, _}, acc) -> acc + w end)
+    end
+  end
+
   defmodule DAG do
-    @initial %{}
+    defstruct [:graph, :weights]
 
     def build(vertices) do
+      %__MODULE__{
+        graph: build_dag(vertices),
+        weights: build_weights(vertices),
+      }
+    end
+
+    def build_dag(vertices) do
       dag = :digraph.new
 
       Enum.each(vertices, fn {name, _, ds} ->
@@ -16,13 +84,25 @@ defmodule AdventOfCode.DaySeven do
       dag
     end
 
-    def root(dag) do
+    def build_weights(list) do
+      Enum.reduce(list, %{}, fn {name, weight, _}, acc -> Map.put(acc, name, weight) end)
+    end
+
+    def root(%{graph: dag}) do
       dag
       |> toposort
       |> List.first
     end
 
-    def toposort(dag), do: :digraph_utils.topsort(dag)
+    def weight(%{weights: weights}, name) do
+      IO.inspect(name, label: "Name")
+      IO.inspect(weights[name], label: "Weight")
+      weights[name]
+    end
+
+    defp toposort(dag), do: :digraph_utils.topsort(dag)
+
+    def neighbors(%{graph: dag}, v), do: :digraph.out_neighbours(dag, v)
   end
 
   def part_one(list) do
@@ -43,15 +123,29 @@ defmodule AdventOfCode.DaySeven do
   end
 
   def weights(dag, root) do
-    neighbours = :digraph.out_neighbours(dag, root)
-    weights(dag, root, neighbours, 0)
+    neighbours = DAG.neighbors(dag, root)
+    Enum.map(neighbours, & DAG.weight(dag, &1))
   end
-  def weights(_dag, _v, [], weight), do: weight
-  def weights(dag, v, [head | tail], weight) do
-    weight + weights(dag, head, neighbors(dag, head)) + weights(dag, v, tail, weight)
+  def weights(dag, node, []) do
+    DAG.weight(dag, node)
+  end
+  def weights(dag, node, neighbors) do
+    if weights_match?(dag, node) do
+    end
   end
 
-  def neighbors(dag, v), do: :digraph.out_neighbours(dag, v)
+  def weights_match?(dag, node) do
+    dag
+    |> Enum.map(node, & DAG.weight(dag, &1))
+    |> Enum.uniq
+    |> Enum.count == 1
+  end
+  #   weights(dag, root, neighbours, 0)
+  # end
+  # def weights(_dag, _v, [], weight), do: weight
+  # def weights(dag, v, [head | tail], weight) do
+  #   weight + weights(dag, head, neighbors(dag, head)) + weights(dag, v, tail, weight)
+  # end
 
   def parse_list(str) do
     str
