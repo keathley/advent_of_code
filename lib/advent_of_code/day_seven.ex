@@ -136,7 +136,7 @@ defmodule AdventOfCode.DaySeven do
 
   def weights_match?(dag, node) do
     dag
-    |> Enum.map(node, & DAG.weight(dag, &1))
+    |> Enum.map(& DAG.weight(dag, &1))
     |> Enum.uniq
     |> Enum.count == 1
   end

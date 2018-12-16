@@ -1,8 +1,11 @@
 defmodule AdventOfCode.DayEight do
   def part_one(str) do
-    str
-    |> parse_list
-    |> execute(%{}, 0)
+    {registers, _} =
+      str
+      |> parse_list
+      |> execute(%{}, 0)
+
+    largest_value(registers)
   end
 
   def part_two(str) do
@@ -51,6 +54,7 @@ defmodule AdventOfCode.DayEight do
   def largest_value(registers) do
     registers
     |> Enum.map(fn {_, v} -> v end)
+    |> Enum.concat([0])
     |> Enum.max
   end
 
